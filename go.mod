@@ -1,4 +1,4 @@
-module github.com/kuroko-shirai/axolotl.git
+module github.com/kuroko-shirai/axolotl
 
 go 1.25.3
 

@@ -3,7 +3,7 @@ package cluster
 import (
 	"errors"
 
-	"github.com/kuroko-shirai/axolotl.git/v1/node"
+	"github.com/kuroko-shirai/axolotl/v1/node"
 	"github.com/redis/rueidis"
 )
 

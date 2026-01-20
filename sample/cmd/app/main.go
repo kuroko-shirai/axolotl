@@ -8,12 +8,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kuroko-shirai/axolotl.git/sample/config"
-	"github.com/kuroko-shirai/axolotl.git/sample/redis"
-	"github.com/kuroko-shirai/axolotl.git/sample/service"
-	"github.com/kuroko-shirai/axolotl.git/v1/cluster"
-	"github.com/kuroko-shirai/axolotl.git/v1/cobweb"
-	"github.com/kuroko-shirai/axolotl.git/v1/monitor"
+	"github.com/kuroko-shirai/axolotl/sample/config"
+	"github.com/kuroko-shirai/axolotl/sample/redis"
+	"github.com/kuroko-shirai/axolotl/sample/service"
+	"github.com/kuroko-shirai/axolotl/v1/cluster"
+	"github.com/kuroko-shirai/axolotl/v1/cobweb"
+	"github.com/kuroko-shirai/axolotl/v1/monitor"
 )
 
 const configPath = "./config.yaml"

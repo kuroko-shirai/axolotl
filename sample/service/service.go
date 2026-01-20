@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kuroko-shirai/axolotl.git/v1/cobweb"
+	"github.com/kuroko-shirai/axolotl/v1/cobweb"
 	"github.com/redis/rueidis"
 )
 
