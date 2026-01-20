@@ -1,18 +1,19 @@
 package main
 
 import (
-	"axolotl/sample/config"
-	"axolotl/sample/redis"
-	"axolotl/sample/service"
-	"axolotl/v1/cluster"
-	"axolotl/v1/cobweb"
-	"axolotl/v1/monitor"
 	"context"
 	"fmt"
 	"log"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/kuroko-shirai/axolotl.git/sample/config"
+	"github.com/kuroko-shirai/axolotl.git/sample/redis"
+	"github.com/kuroko-shirai/axolotl.git/sample/service"
+	"github.com/kuroko-shirai/axolotl.git/v1/cluster"
+	"github.com/kuroko-shirai/axolotl.git/v1/cobweb"
+	"github.com/kuroko-shirai/axolotl.git/v1/monitor"
 )
 
 const configPath = "./config.yaml"

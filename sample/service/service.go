@@ -1,10 +1,10 @@
 package service
 
 import (
-	"axolotl/v1/cobweb"
 	"context"
 	"fmt"
 
+	"github.com/kuroko-shirai/axolotl.git/v1/cobweb"
 	"github.com/redis/rueidis"
 )
 

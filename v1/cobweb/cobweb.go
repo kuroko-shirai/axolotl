@@ -1,11 +1,11 @@
 package cobweb
 
 import (
-	"axolotl/v1/cluster"
 	"context"
 	"errors"
 	"log"
 
+	"github.com/kuroko-shirai/axolotl.git/v1/cluster"
 	"github.com/redis/rueidis"
 )
 

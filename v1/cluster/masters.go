@@ -1,9 +1,9 @@
 package cluster
 
 import (
-	"axolotl/v1/node"
 	"errors"
 
+	"github.com/kuroko-shirai/axolotl.git/v1/node"
 	"github.com/redis/rueidis"
 )
 
