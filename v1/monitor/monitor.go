@@ -256,3 +256,30 @@ func (it *Monitor) Snapshot() map[string]float64 {
 	}
 	return result
 }
+
+// WaitReady блокирует выполнение до тех пор, пока все узлы не будут инициализированы,
+// либо пока не будет превышено максимальное количество попыток.
+func (it *Monitor) WaitReady(timeout time.Duration, maxRetries int) error {
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	attempts := 0
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("monitor readiness timeout after %v", timeout)
+		case <-ticker.C:
+			if len(it.Snapshot()) == len(it.nodes) {
+				return nil
+			}
+			attempts++
+			if attempts > maxRetries {
+				return fmt.Errorf("monitor failed to initialize after %d attempts", maxRetries)
+			}
+			log.Printf("monitor initializing... (%d/%d nodes ready)", len(it.Snapshot()), len(it.nodes))
+		}
+	}
+}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os/signal"
 	"syscall"
@@ -26,7 +25,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
-	fmt.Println(cfg)
 
 	mastersAddresses := cfg.Masters.Addresses
 	mastersMaxThreshold := cfg.Masters.MaxThreshold
@@ -49,20 +47,11 @@ func main() {
 	defer monitor.Close()
 	go monitor.Run(ctx)
 
-	// Ждём инициализации монитора
-	retryAttempts := 0
-	for {
-		if len(monitor.Snapshot()) == len(mastersAddresses)+len(replicasAddresses) {
-			break
-		}
-		log.Println("monitor has not been prepared...", len(monitor.Snapshot()))
-		if retryAttempts >= 5 {
-			log.Fatal("failed to connect monitor to redis")
-		}
-		retryAttempts++
-		time.Sleep(time.Second)
+	// Ждём, пока монитор соберёт данные со всех узлов
+	if err := monitor.WaitReady(10*time.Second, 5); err != nil {
+		log.Fatal("monitor not ready:", err)
 	}
-	log.Println("monitor has been prepared...")
+	log.Println("monitor has been prepared")
 
 	// Создаём Cobweb
 	cobweb, err := cobweb.New(
