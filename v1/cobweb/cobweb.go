@@ -18,14 +18,6 @@ type (
 		Snapshot() map[string]float64
 	}
 
-	ReadCommand interface {
-		// Build возвращает rueidis.Completed команду.
-		Build(client rueidis.Client) rueidis.Completed
-
-		// IsReadOnly возвращает true если команда для чтения
-		IsReadOnly() bool
-	}
-
 	Config struct {
 		Masters  *cluster.Config
 		Replicas *cluster.Config
