@@ -1,4 +1,4 @@
-package monitor
+package cpu
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ type (
 	}
 )
 
-func parseCPUFromInfo(info string) (*CPUStats, error) {
+func New(info string) (CPUStats, error) {
 	lines := strings.Split(info, "\n")
 	var user, sys float64
 	found := false
@@ -43,8 +43,11 @@ func parseCPUFromInfo(info string) (*CPUStats, error) {
 	}
 
 	if !found {
-		return nil, errors.New("no valid CPU stats found in INFO")
+		return CPUStats{}, errors.New("no valid CPU stats found in INFO")
 	}
 
-	return &CPUStats{User: user, Sys: sys}, nil
+	return CPUStats{
+		User: user,
+		Sys:  sys,
+	}, nil
 }

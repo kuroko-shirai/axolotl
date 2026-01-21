@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kuroko-shirai/axolotl/v1/cpu"
 	"github.com/redis/rueidis"
 )
 
@@ -80,7 +81,7 @@ func New(config Config) (Monitor, error) {
 			return Monitor{}, fmt.Errorf("failed to parse INFO from %s: %w", address, err)
 		}
 
-		current, err := parseCPUFromInfo(infoStr)
+		cpu, err := cpu.New(infoStr)
 		if err != nil {
 			client.Close()
 			for _, n := range nodes {
@@ -95,8 +96,8 @@ func New(config Config) (Monitor, error) {
 		})
 
 		stats[address] = info{
-			user:   current.User,
-			sys:    current.Sys,
+			user:   cpu.User,
+			sys:    cpu.Sys,
 			cpu:    -1,
 			lastTs: time.Now(),
 		}
@@ -202,7 +203,7 @@ func (it *Monitor) updateNodeCPU(n node) error {
 		return fmt.Errorf("failed to convert response to string: %w", err)
 	}
 
-	current, err := parseCPUFromInfo(infoStr)
+	cpu, err := cpu.New(infoStr)
 	if err != nil {
 		return fmt.Errorf("parse error: %w", err)
 	}
@@ -217,10 +218,10 @@ func (it *Monitor) updateNodeCPU(n node) error {
 		return fmt.Errorf("unknown address")
 	}
 
-	if current.User < prev.user || current.Sys < prev.sys {
+	if cpu.User < prev.user || cpu.Sys < prev.sys {
 		it.stats[n.address] = info{
-			user:   current.User,
-			sys:    current.Sys,
+			user:   cpu.User,
+			sys:    cpu.Sys,
 			cpu:    -1,
 			lastTs: now,
 		}
@@ -232,15 +233,15 @@ func (it *Monitor) updateNodeCPU(n node) error {
 		return nil
 	}
 
-	deltaUser := current.User - prev.user
-	deltaSys := current.Sys - prev.sys
+	deltaUser := cpu.User - prev.user
+	deltaSys := cpu.Sys - prev.sys
 	totalDelta := deltaUser + deltaSys
 
 	usagePercent := (totalDelta / deltaTime) * 100
 
 	it.stats[n.address] = info{
-		user:   current.User,
-		sys:    current.Sys,
+		user:   cpu.User,
+		sys:    cpu.Sys,
 		cpu:    usagePercent,
 		lastTs: now,
 	}
