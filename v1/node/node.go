@@ -15,10 +15,6 @@ type (
 	Config struct {
 		Password string
 		Username string
-	}
-
-	NodeConfig struct {
-		Config
-		Address string
+		Address  string
 	}
 )

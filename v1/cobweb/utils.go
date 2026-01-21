@@ -18,5 +18,6 @@ func median(values []float64) float64 {
 	if n%2 == 0 {
 		return (sorted[n/2-1] + sorted[n/2]) * 0.5
 	}
+
 	return sorted[n/2]
 }

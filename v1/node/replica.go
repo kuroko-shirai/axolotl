@@ -6,12 +6,14 @@ import (
 	"github.com/redis/rueidis"
 )
 
-type Replica struct {
-	client  rueidis.Client
-	address string
-}
+type (
+	Replica struct {
+		client  rueidis.Client
+		address string
+	}
+)
 
-func NewReplica(config *NodeConfig) (Replica, error) {
+func NewReplica(config *Config) (Replica, error) {
 	if len(config.Address) == 0 {
 		return Replica{}, errors.New("invalid replica setting: need at least one replica address")
 	}

@@ -6,13 +6,14 @@ import (
 	"github.com/redis/rueidis"
 )
 
-type Master struct {
-	client   rueidis.Client
-	replicas map[Replica]struct{}
-	address  string
-}
+type (
+	Master struct {
+		client  rueidis.Client
+		address string
+	}
+)
 
-func NewMaster(config *NodeConfig) (Master, error) {
+func NewMaster(config *Config) (Master, error) {
 	if len(config.Address) == 0 {
 		return Master{}, errors.New("invalid master address")
 	}
@@ -31,27 +32,13 @@ func NewMaster(config *NodeConfig) (Master, error) {
 	}
 
 	return Master{
-		address:  config.Address,
-		replicas: make(map[Replica]struct{}),
-		client:   client,
+		address: config.Address,
+		client:  client,
 	}, nil
 }
 
 func (it Master) Address() string {
 	return it.address
-}
-
-func (it Master) AddReplica(replica *Replica) {
-	it.replicas[*replica] = struct{}{}
-}
-
-func (it Master) ReplicasAddress() []string {
-	replicasAddress := make([]string, 0, len(it.replicas))
-	for replica := range it.replicas {
-		replicasAddress = append(replicasAddress, replica.Address())
-	}
-
-	return replicasAddress
 }
 
 func (it Master) Client() rueidis.Client {
