@@ -3,14 +3,14 @@ package cluster
 import (
 	"errors"
 
-	"github.com/kuroko-shirai/axolotl/v1/node"
 	"github.com/redis/rueidis"
 )
 
-type Masters struct {
-	client  rueidis.Client
-	masters []node.Master
-}
+type (
+	Masters struct {
+		client rueidis.Client
+	}
+)
 
 func NewMasters(config *Config) (Masters, error) {
 	if len(config.Addresses) == 0 {
