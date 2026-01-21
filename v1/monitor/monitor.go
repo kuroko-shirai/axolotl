@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kuroko-shirai/axolotl/v1/cpu"
+	"github.com/kuroko-shirai/axolotl/v1/internal/cpu"
 	"github.com/redis/rueidis"
 )
 
