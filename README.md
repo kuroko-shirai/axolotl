@@ -38,7 +38,7 @@ monitor, _ := monitor.New(monitor.Config{
     Username:  cfg.Username,
     Password:  cfg.Password,
     Addresses: append(cfg.Masters.Addresses, cfg.Replicas.Addresses...),
-    Delay:     time.Second,
+    Ping:     time.Second,
 })
 go monitor.Run(ctx)
 

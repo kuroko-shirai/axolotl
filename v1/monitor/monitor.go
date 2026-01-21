@@ -12,18 +12,20 @@ import (
 )
 
 type (
+	// Config содержит поля настройки системы считывания состояния master- и
+	// replica-нод сети.
 	Config struct {
-		Password  string
-		Username  string
-		Addresses []string
-		Delay     time.Duration
+		Addresses []string      // Список адресов master- и replica-нод сети.
+		Password  string        // Пароль redis.
+		Username  string        // Пользователь redis.
+		Ping      time.Duration // Период запуска сбора состояния CPU master- и replica-нод сети.
 	}
 
 	info struct {
+		lastTs time.Time
 		user   float64
 		sys    float64
 		cpu    float64
-		lastTs time.Time
 	}
 
 	node struct {
@@ -35,7 +37,7 @@ type (
 		nodes []node
 		mu    sync.RWMutex
 		stats map[string]info
-		delay time.Duration
+		ping  time.Duration
 	}
 )
 
@@ -100,10 +102,14 @@ func New(config Config) (Monitor, error) {
 		}
 	}
 
+	if config.Ping == 0 {
+		return Monitor{}, fmt.Errorf("invalid zero-value ping period")
+	}
+
 	return Monitor{
 		nodes: nodes,
 		stats: stats,
-		delay: config.Delay,
+		ping:  config.Ping,
 	}, nil
 }
 
@@ -114,7 +120,7 @@ func (it *Monitor) Close() {
 }
 
 func (it *Monitor) Run(ctx context.Context) {
-	ticker := time.NewTicker(it.delay)
+	ticker := time.NewTicker(it.ping)
 	defer ticker.Stop()
 
 	for {

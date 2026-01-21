@@ -38,7 +38,7 @@ func main() {
 			Username:  username,
 			Password:  password,
 			Addresses: append(mastersAddresses, replicasAddresses...),
-			Delay:     1 * time.Second,
+			Ping:      1 * time.Second,
 		},
 	)
 	if err != nil {
