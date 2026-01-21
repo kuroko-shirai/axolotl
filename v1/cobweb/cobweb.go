@@ -3,6 +3,7 @@ package cobweb
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/kuroko-shirai/axolotl/v1/cluster"
@@ -14,8 +15,9 @@ var (
 )
 
 type (
+	// Monitor интерфейс мониторинга cpu master- и replica-нод системы.
 	Monitor interface {
-		Snapshot() map[string]float64
+		Snapshot() map[string]float64 // Метод снятия текущей нагрузки системы.
 	}
 
 	Config struct {
@@ -24,15 +26,15 @@ type (
 		Monitor  Monitor
 	}
 
-	Core struct {
-		Addresses []string
-		Threshold float64
-		Cluster   cluster.Cluster
+	core struct {
+		addresses []string
+		threshold float64
+		cluster   cluster.Cluster
 	}
 
 	Cobweb struct {
-		Masters  Core
-		Replicas Core
+		Masters  core
+		Replicas core
 		Monitor  Monitor
 	}
 )
@@ -46,26 +48,26 @@ func New(config *Config) (Cobweb, error) {
 		log.Fatal("incorrect system's configuration with empty monitor")
 	}
 
-	mastersCluster, err := cluster.NewMasters(config.Masters)
+	masters, err := cluster.NewMasters(config.Masters)
 	if err != nil {
-		return Cobweb{}, err
+		return Cobweb{}, fmt.Errorf("failed to create masters-cluster: %v", err)
 	}
 
-	replicasCluster, err := cluster.NewReplicas(config.Replicas)
+	replicas, err := cluster.NewReplicas(config.Replicas)
 	if err != nil {
-		return Cobweb{}, err
+		return Cobweb{}, fmt.Errorf("failed to create replicas-cluster: %v", err)
 	}
 
 	return Cobweb{
-		Masters: Core{
-			Addresses: config.Masters.Addresses,
-			Threshold: config.Masters.MaxThreshold,
-			Cluster:   mastersCluster,
+		Masters: core{
+			addresses: config.Masters.Addresses,
+			threshold: config.Masters.MaxThreshold,
+			cluster:   masters,
 		},
-		Replicas: Core{
-			Addresses: config.Replicas.Addresses,
-			Threshold: config.Replicas.MaxThreshold,
-			Cluster:   replicasCluster,
+		Replicas: core{
+			addresses: config.Replicas.Addresses,
+			threshold: config.Replicas.MaxThreshold,
+			cluster:   replicas,
 		},
 		Monitor: config.Monitor,
 	}, nil
@@ -73,35 +75,33 @@ func New(config *Config) (Cobweb, error) {
 
 func (it *Cobweb) Execute(ctx context.Context, exec Executor) ([]rueidis.RedisResult, error) {
 	snapshot := it.Monitor.Snapshot()
-
-	var replicasCPUs, mastersCPUs []float64
-	for _, addr := range it.Replicas.Addresses {
-		if cpu, ok := snapshot[addr]; ok {
-			replicasCPUs = append(replicasCPUs, cpu)
-		}
-	}
-	for _, addr := range it.Masters.Addresses {
-		if cpu, ok := snapshot[addr]; ok {
-			mastersCPUs = append(mastersCPUs, cpu)
-		}
-	}
-
-	replicasMedian := median(replicasCPUs)
-	mastersMedian := median(mastersCPUs)
+	replicasMedian := it.median(snapshot, it.Replicas.addresses)
+	mastersMedian := it.median(snapshot, it.Masters.addresses)
 
 	var client rueidis.Client
-	if replicasMedian > it.Replicas.Threshold {
-		if mastersMedian <= it.Masters.Threshold {
+	if replicasMedian > it.Replicas.threshold {
+		if mastersMedian <= it.Masters.threshold {
 			// Мастера в среднем свободны — читаем с них
-			client = it.Masters.Cluster.Client()
+			client = it.Masters.cluster.Client()
 		} else {
 			// Обе группы "в среднем" перегружены — читаем с реплик (меньше влияние на запись)
-			client = it.Replicas.Cluster.Client()
+			client = it.Replicas.cluster.Client()
 		}
 	} else {
 		// Реплики в среднем свободны — читаем с них
-		client = it.Replicas.Cluster.Client()
+		client = it.Replicas.cluster.Client()
 	}
 
 	return exec.Execute(ctx, client)
+}
+
+func (it *Cobweb) median(snapshot map[string]float64, addresses []string) float64 {
+	cpus := make([]float64, 0, len(addresses))
+	for _, addr := range addresses {
+		if cpu, ok := snapshot[addr]; ok {
+			cpus = append(cpus, cpu)
+		}
+	}
+
+	return median(cpus)
 }
